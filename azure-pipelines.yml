@@ -1,0 +1,44 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-16.04'
+
+steps:
+- checkout: self
+  submodules: recursive
+
+- script: |
+    wget https://github.com/gohugoio/hugo/releases/download/v0.54.0/hugo_0.54.0_Linux-64bit.tar.gz
+    tar xf hugo_0.54.0_Linux-64bit.tar.gz
+  displayName: 'Install Hugo.'
+
+- script: |
+    wget -O claat https://github.com/googlecodelabs/tools/releases/download/v2.2.0/claat-linux-amd64
+    chmod 755 claat
+  displayName: 'Install Claat.'
+
+- script: |
+    mkdir -p data/ content/ layout/ public/ static/
+    rm -fr public/*
+    (
+      cd public/ &&
+      for i in ../CodeLabs/*/Content.md; do
+        ../claat export $i;
+      done
+    )
+    cat public/*/codelab.json |jq -s 'sort_by(.updated) | reverse' > data/codelab.json
+    ./hugo
+  displayName: 'Generate contents.'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(Build.SourcesDirectory)/public' 
+    artifactName: 'lezione.pizzafactory.jp' 
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  displayName: 'Publish web contents.'

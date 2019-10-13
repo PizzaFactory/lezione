@@ -1,0 +1,5 @@
+baseURL = "https://lezione.pizzafactory.jp/"
+#languageCode = "en-us"
+title = "Lezione - CodeLabs for PizzaFactory"
+theme = "lezione"
+googleAnalytics = "UA-135551325-3"
